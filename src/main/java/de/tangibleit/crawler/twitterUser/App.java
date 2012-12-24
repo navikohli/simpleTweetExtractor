@@ -10,7 +10,9 @@ import org.restlet.Server;
 import org.restlet.data.Protocol;
 import org.restlet.routing.Router;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.Props;
 
 /**
  * Hello world!
@@ -18,12 +20,14 @@ import akka.actor.ActorSystem;
  */
 public class App extends Application {
 	private ActorSystem system;
+	private ActorRef manager;
 
 	public App() {
 		super();
 
 		system = ActorSystem.create();
-		System.out.println(system.toString());
+		manager = system.actorOf(new Props(WorkerManager.class), "manager");
+		manager.tell(new Messages.CrawlUser("test"));
 	}
 
 	@Override

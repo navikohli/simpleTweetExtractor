@@ -9,6 +9,8 @@
 .project
 .settings
 
+twitter4j.properties
+
 src/main/generated/
 target/
 
