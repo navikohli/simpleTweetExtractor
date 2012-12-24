@@ -1,11 +1,15 @@
 package de.tangibleit.crawler.twitterUser;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Instant;
 import org.joda.time.Seconds;
+import org.jooq.SQLDialect;
+import org.jooq.impl.Factory;
 
 import de.tangibleit.crawler.twitterUser.Messages.Task;
 import scala.collection.parallel.ParSeqLike.LastIndexWhere;
@@ -24,12 +28,15 @@ public abstract class Worker<T extends Task> extends UntypedActor {
 	protected Twitter twitter = new TwitterFactory(new ConfigurationBuilder()
 			.setIncludeEntitiesEnabled(true).build()).getInstance();
 
-	protected abstract void execute(T msg);
+	protected abstract void execute(T msg) throws SQLException;
 
 	protected abstract String getPath();
 
 	protected LoggingAdapter log = Logging.getLogger(getContext().system(),
 			this);
+
+	protected Connection connection = null;
+	protected Factory create = null;
 
 	private Instant windowEnd = null;
 	private Instant lastRequest = Instant.now();
@@ -91,8 +98,28 @@ public abstract class Worker<T extends Task> extends UntypedActor {
 	}
 
 	@Override
+	public void postStop() {
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		super.postStop();
+	}
+
+	@Override
 	public void preStart() {
 		super.preStart();
+		try {
+			connection = App.DATASOURCE.getConnection();
+			connection.setAutoCommit(false);
+			create = new Factory(connection, SQLDialect.MYSQL);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		getContext().parent().tell(new Messages.Idle());
 	}
 }

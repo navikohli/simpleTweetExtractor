@@ -11,6 +11,8 @@ import org.restlet.Server;
 import org.restlet.data.Protocol;
 import org.restlet.routing.Router;
 
+import com.jolbox.bonecp.BoneCPDataSource;
+
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -22,6 +24,7 @@ import akka.actor.Props;
 public class App extends Application {
 	private ActorSystem system;
 	private ActorRef manager;
+	public static BoneCPDataSource DATASOURCE;
 
 	public App() {
 		super();
@@ -30,6 +33,23 @@ public class App extends Application {
 		manager = system.actorOf(new Props(WorkerManager.class), "manager");
 		// manager.tell(new Messages.CrawlUser("th0br0"));
 		manager.tell(new Messages.CrawlList("th0br0", "blaa"));
+
+		setupDB();
+	}
+
+	private void setupDB() {
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		DATASOURCE = new BoneCPDataSource(); // create a new datasource object
+		DATASOURCE.setJdbcUrl("jdbc:mysql://localhost:3306/Crawler"); // set the
+																		// JDBC
+		// url
+		DATASOURCE.setUsername("root"); // set the username
+		DATASOURCE.setPassword(""); // set the password
+
 	}
 
 	@Override

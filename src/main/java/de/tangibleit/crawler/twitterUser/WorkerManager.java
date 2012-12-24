@@ -23,6 +23,7 @@ public class WorkerManager extends UntypedActor {
 			ref = getContext().actorOf(new Props(clazz), name);
 		}
 
+		// Got a new object!
 		public void receive(T msg) {
 			boolean idle = queue.isEmpty();
 			if (!queue.contains(msg))
@@ -33,6 +34,7 @@ public class WorkerManager extends UntypedActor {
 
 		}
 
+		// Called when worker is idle
 		public void idle() {
 			if (!queue.isEmpty())
 				ref.tell(queue.pop());
