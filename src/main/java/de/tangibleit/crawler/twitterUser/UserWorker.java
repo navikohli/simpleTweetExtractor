@@ -53,7 +53,9 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 
 				long id;
 				try {
-					id = twitter.showUser(msg.userName).getId();
+					User u = twitter.showUser(msg.userName);
+					updateUser(u);
+					id = u.getId();
 				} catch (Exception e) {
 					log.info("user: " + msg.userName
 							+ " does not exist. skipping");
@@ -64,7 +66,7 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 				// his old tweets.
 				TweetRecord rec = create.selectFrom(Tables.TWEET)
 						.where(Tables.TWEET.USER_ID.equal(id))
-						.orderBy(Tables.TWEET.ID.desc()).fetchOne();
+						.orderBy(Tables.TWEET.ID.desc()).limit(1).fetchOne();
 				if (rec != null)
 					paging.setSinceId(rec.getId());
 
@@ -74,10 +76,6 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 					return;
 
 				processStatuses(statuses);
-				// Get total statuses count.
-				User u = statuses.get(0).getUser();
-				// Synchronise user
-				updateUser(u);
 
 				int statusCount = statuses.size();
 
@@ -140,6 +138,10 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 
 				// Check for blacklisting
 
+				log.info("msg: " + status.getText());
+				log.info("Url: " + url);
+				log.info("urlStr: " + urlStr);
+
 				TweetUrlRecord urec = new TweetUrlRecord();
 				urec.attach(create);
 				urec.setTweetId(status.getId());
@@ -165,8 +167,6 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 		rec.setImageUrl(user.getProfileImageURL());
 
 		rec.store();
-		
-		connection.commit();
 	}
 
 	public String getPath() {
