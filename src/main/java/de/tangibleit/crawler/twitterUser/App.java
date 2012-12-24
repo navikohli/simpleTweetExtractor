@@ -1,5 +1,6 @@
 package de.tangibleit.crawler.twitterUser;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
@@ -27,7 +28,8 @@ public class App extends Application {
 
 		system = ActorSystem.create();
 		manager = system.actorOf(new Props(WorkerManager.class), "manager");
-		manager.tell(new Messages.CrawlUser("test"));
+		// manager.tell(new Messages.CrawlUser("th0br0"));
+		manager.tell(new Messages.CrawlList("th0br0", "blaa"));
 	}
 
 	@Override

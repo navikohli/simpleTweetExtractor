@@ -62,6 +62,11 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.2</version>
 		</dependency>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>2.1</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
@@ -123,7 +128,7 @@
 							<includes>.*</includes>
 							<excludes />
 							<inputSchema>Crawler</inputSchema>
-<!-- 							<dateAsTimestamp>false</dateAsTimestamp> -->
+							<!-- <dateAsTimestamp>false</dateAsTimestamp> -->
 						</database>
 						<generate>
 							<deprecated>false</deprecated>
