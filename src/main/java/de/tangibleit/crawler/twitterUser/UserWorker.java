@@ -165,6 +165,8 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 		rec.setImageUrl(user.getProfileImageURL());
 
 		rec.store();
+		
+		connection.commit();
 	}
 
 	public String getPath() {
