@@ -22,17 +22,15 @@ import akka.actor.Props;
  * 
  */
 public class App extends Application {
-	private ActorSystem system;
-	private ActorRef manager;
+	public static ActorSystem SYSTEM;
+	public static ActorRef MANAGER;
 	public static BoneCPDataSource DATASOURCE;
 
 	public App() {
 		super();
 
-		system = ActorSystem.create();
-		manager = system.actorOf(new Props(WorkerManager.class), "manager");
-		// manager.tell(new Messages.CrawlUser("th0br0"));
-		manager.tell(new Messages.CrawlList("th0br0", "blaa"));
+		SYSTEM = ActorSystem.create();
+		MANAGER = SYSTEM.actorOf(new Props(WorkerManager.class), "manager");
 
 		setupDB();
 	}

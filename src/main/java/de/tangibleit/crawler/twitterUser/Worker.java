@@ -94,7 +94,7 @@ public abstract class Worker<T extends Task> extends UntypedActor {
 		T task = (T) msg;
 
 		execute(task);
-		getContext().parent().tell(new Messages.Idle());
+		getContext().parent().tell(new Messages.Idle(), self());
 	}
 
 	@Override
@@ -120,6 +120,6 @@ public abstract class Worker<T extends Task> extends UntypedActor {
 			e.printStackTrace();
 		}
 
-		getContext().parent().tell(new Messages.Idle());
+		getContext().parent().tell(new Messages.Idle(), self());
 	}
 }

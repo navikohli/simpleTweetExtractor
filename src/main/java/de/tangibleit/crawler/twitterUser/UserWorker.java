@@ -79,7 +79,6 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 
 				int statusCount = statuses.size();
 
-				log.info("Status count: " + statuses.size());
 				do {
 
 					preRequest();
@@ -90,17 +89,17 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 					processStatuses(statuses);
 
 				} while (statuses.size() != 0);
-				log.info("done!");
 
 			} catch (TwitterException e) {
 				log.info("Twitter failure: " + e.getMessage());
 				// transaction.rollback();
-				getContext().parent().tell(msg);
+				getContext().parent().tell(msg, self());
 			}
 		} catch (SQLException e) {
 			connection.rollback();
 		} finally {
 			connection.commit();
+			log.info("Retrieving " + msg.userName + " done.");
 		}
 	}
 
@@ -135,12 +134,10 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 					// 404 or similar
 					url = urlStr;
 				}
+				if (url == null)
+					url = urlStr;
 
-				// Check for blacklisting
-
-				log.info("msg: " + status.getText());
-				log.info("Url: " + url);
-				log.info("urlStr: " + urlStr);
+				// XXX - Check for blacklisting
 
 				TweetUrlRecord urec = new TweetUrlRecord();
 				urec.attach(create);
