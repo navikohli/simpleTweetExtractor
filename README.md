@@ -6,3 +6,15 @@
 * Create a jar using ```mvn clean package assembly:assembly```
 * Make sure that you have a ```twitter4j.properties``` file with your twitter API keys in the folder you want to run the app from (together with the ```settings.properties```)
 
+#### twitter4j.properties
+```
+oauth.consumerKey=
+oauth.consumerSecret=
+oauth.accessToken=
+oauth.accessTokenSecret=
+```
+
+<!---
+#### Author
+Andreas Osowski <contact@tangible-it.de>
+-->
