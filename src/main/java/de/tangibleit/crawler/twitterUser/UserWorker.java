@@ -52,15 +52,9 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 				paging.setCount(200);
 
 				long id;
-				try {
-					User u = twitter.showUser(msg.userName);
-					updateUser(u);
-					id = u.getId();
-				} catch (Exception e) {
-					log.info("user: " + msg.userName
-							+ " does not exist. skipping");
-					return;
-				}
+				User u = twitter.showUser(msg.userName);
+				updateUser(u, msg.organizationId);
+				id = u.getId();
 
 				// If we've already crawled this user in the past, don't crawl
 				// his old tweets.
@@ -90,16 +84,21 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 
 				} while (statuses.size() != 0);
 
+				setQueueStatus(msg.queueId, 3);
 			} catch (TwitterException e) {
 				log.info("Twitter failure: " + e.getMessage());
-				// transaction.rollback();
-				getContext().parent().tell(msg, self());
+				setQueueStatus(msg.queueId, 4);
 			}
+
 		} catch (SQLException e) {
 			connection.rollback();
+
+			log.info("user: " + msg.userName + " does not exist. skipping");
+			setQueueStatus(msg.queueId, 4);
 		} finally {
 			connection.commit();
-			log.info("Retrieving " + msg.userName + " done.");
+
+			log.info("Handling " + msg.userName + " done.");
 		}
 	}
 
@@ -150,7 +149,7 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 
 	}
 
-	private void updateUser(User user) throws SQLException {
+	private void updateUser(User user, int organizationId) throws SQLException {
 		UserRecord rec = create.selectFrom(Tables.USER)
 				.where(Tables.USER.ID.equal(user.getId())).fetchOne();
 
@@ -159,6 +158,9 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 			rec.setId(user.getId());
 			rec.attach(create);
 		}
+
+		if (organizationId != -1)
+			rec.setOrganizationId(organizationId);
 
 		rec.setScreenName(user.getScreenName());
 		rec.setImageUrl(user.getProfileImageURL());

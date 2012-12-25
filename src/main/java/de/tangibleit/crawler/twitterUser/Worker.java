@@ -12,6 +12,7 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.Factory;
 
 import de.tangibleit.crawler.twitterUser.Messages.Task;
+import de.tangibleit.crawler.twitterUser.db.Tables;
 import scala.collection.parallel.ParSeqLike.LastIndexWhere;
 import twitter4j.RateLimitStatus;
 import twitter4j.Twitter;
@@ -121,5 +122,10 @@ public abstract class Worker<T extends Task> extends UntypedActor {
 		}
 
 		getContext().parent().tell(new Messages.Idle(), self());
+	}
+
+	protected void setQueueStatus(int queueId, int status) {
+		create.update(Tables.QUEUE).set(Tables.QUEUE.STATUS, status)
+				.where(Tables.QUEUE.ID.equal(queueId)).execute();
 	}
 }
