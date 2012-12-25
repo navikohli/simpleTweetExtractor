@@ -1,8 +1,12 @@
-package de.tangibleit.crawler.twitterUser;
+package de.tangibleit.crawler.tweetextractor;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Properties;
 
 import org.restlet.Application;
 import org.restlet.Component;
@@ -42,12 +46,27 @@ public class App extends Application {
 			e.printStackTrace();
 		}
 		DATASOURCE = new BoneCPDataSource(); // create a new datasource object
-		DATASOURCE.setJdbcUrl("jdbc:mysql://localhost:3306/Crawler"); // set the
-																		// JDBC
+		DATASOURCE.setJdbcUrl(getConnectionUrl()); // set the
+													// JDBC
 		// url
 		DATASOURCE.setUsername("root"); // set the username
 		DATASOURCE.setPassword(""); // set the password
+	}
 
+	private String getConnectionUrl() {
+		Properties properties = new Properties();
+		BufferedInputStream stream;
+		try {
+			stream = new BufferedInputStream(new FileInputStream(
+					"settings.properties"));
+			properties.load(stream);
+			stream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		return properties.getProperty("jdbc");
 	}
 
 	@Override

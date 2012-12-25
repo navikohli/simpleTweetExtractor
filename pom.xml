@@ -6,7 +6,7 @@
     <!-- <author>Andreas Osowski</author> -->
 	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>twitterUserCrawler</name>
+	<name>SimpleTweetExtractor</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
 		<dependency>
@@ -100,7 +100,8 @@
 		<plugins>
 			<plugin>
 				<groupId>org.jooq</groupId>
-				<artifactId>jooq-codegen-maven</artifactId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <version>2.6.0</version>
 				<executions>
 					<execution>
 						<id>db</id>
@@ -142,7 +143,7 @@
 							<daos>true</daos>
 						</generate>
 						<target>
-							<packageName>de.tangibleit.crawler.twitterUser.db</packageName>
+							<packageName>de.tangibleit.crawler.tweetextractor.db</packageName>
 							<directory>src/main/generated</directory>
 						</target>
 					</generator>
@@ -157,7 +158,20 @@
 					<target>1.6</target>
 					<generatedSourcesDirectory>src/main/generated</generatedSourcesDirectory>
 				</configuration>
-			</plugin>
+              </plugin>
+              <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                  <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                  </descriptorRefs>
+                  <archive>
+                    <manifest>
+                      <mainClass>de.tangibleit.crawler.tweetextractor.App</mainClass>
+                    </manifest>
+                  </archive>
+                </configuration>
+              </plugin>
 		</plugins>
 	</build>
 </project>

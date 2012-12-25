@@ -1,11 +1,13 @@
-package de.tangibleit.crawler.twitterUser;
+package de.tangibleit.crawler.tweetextractor;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,7 +18,7 @@ import twitter4j.Status;
 import twitter4j.TwitterException;
 import twitter4j.URLEntity;
 import twitter4j.User;
-import de.tangibleit.crawler.twitterUser.Messages.CrawlUser;
+import de.tangibleit.crawler.tweetextractor.Messages.CrawlUser;
 import de.tangibleit.crawler.twitterUser.db.Tables;
 import de.tangibleit.crawler.twitterUser.db.tables.pojos.BlacklistUrl;
 import de.tangibleit.crawler.twitterUser.db.tables.pojos.Tweet;
@@ -28,10 +30,10 @@ import de.tangibleit.crawler.twitterUser.db.tables.records.UserRecord;
 public class UserWorker extends Worker<Messages.CrawlUser> {
 	private final String regex = "\\(?\\b(http://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|]";
 	private final Pattern pattern = Pattern.compile(regex);
+	private List<String> blacklist;
 
 	private String expandURL(String address) throws IOException {
 		URL url = new URL(address);
-
 		HttpURLConnection connection = (HttpURLConnection) url
 				.openConnection(Proxy.NO_PROXY);
 		connection.setInstanceFollowRedirects(false);
@@ -46,6 +48,9 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 		log.info("Retrieve: " + msg.userName);
 		try {
 			// transaction.begin();
+
+			updateBlacklist();
+
 			try {
 				preRequest();
 				Paging paging = new Paging();
@@ -69,7 +74,8 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 				if (statuses.isEmpty())
 					return;
 
-				processStatuses(statuses);
+				for (Status s : statuses)
+					processStatus(s);
 
 				int statusCount = statuses.size();
 
@@ -80,7 +86,8 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 					statuses = twitter.getUserTimeline(msg.userName, paging);
 					statusCount += statuses.size();
 
-					processStatuses(statuses);
+					for (Status s : statuses)
+						processStatus(s);
 
 				} while (statuses.size() != 0);
 
@@ -102,51 +109,68 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 		}
 	}
 
-	private void processStatuses(List<Status> statuses) throws SQLException {
+	private void processStatus(Status status) throws SQLException {
 
-		for (Status status : statuses) {
-			TweetRecord rec = create.selectFrom(Tables.TWEET)
-					.where(Tables.TWEET.ID.equal(status.getId())).fetchOne();
-			if (rec == null) {
-				rec = new TweetRecord();
-				rec.attach(create);
-				rec.setId(status.getId());
-			} else
-				continue; // If the tweet already exists, skip it this time.
-			rec.setMessage(status.getText());
-			rec.setTime(new Timestamp(status.getCreatedAt().getTime()));
-			rec.setUserId(status.getUser().getId());
-			rec.store();
+		TweetRecord rec = create.selectFrom(Tables.TWEET)
+				.where(Tables.TWEET.ID.equal(status.getId())).fetchOne();
+		if (rec == null) {
+			rec = new TweetRecord();
+			rec.attach(create);
+			rec.setId(status.getId());
+		} else
+			return; // If the tweet already exists, skip it this time.
+		rec.setMessage(status.getText());
+		rec.setTime(new Timestamp(status.getCreatedAt().getTime()));
+		rec.setUserId(status.getUser().getId());
 
-			Matcher m = pattern.matcher(status.getText());
-			while (m.find()) {
-				String urlStr = m.group();
-				if (urlStr.startsWith("(") && urlStr.endsWith(")")) {
-					urlStr = urlStr.substring(1, urlStr.length() - 1);
-				}
-
-				String url;
-				try {
-					url = expandURL(urlStr);
-
-				} catch (IOException e) {
-					// 404 or similar
-					url = urlStr;
-				}
-				if (url == null)
-					url = urlStr;
-
-				// XXX - Check for blacklisting
-
-				TweetUrlRecord urec = new TweetUrlRecord();
-				urec.attach(create);
-				urec.setTweetId(status.getId());
-				urec.setUrl(url);
-				urec.store();
-				// Add url to db.
+		Matcher m = pattern.matcher(status.getText());
+		List<TweetUrlRecord> urls = new ArrayList<TweetUrlRecord>();
+		while (m.find()) {
+			String urlStr = m.group();
+			if (urlStr.startsWith("(") && urlStr.endsWith(")")) {
+				urlStr = urlStr.substring(1, urlStr.length() - 1);
 			}
+
+			String url;
+			try {
+				url = expandURL(urlStr);
+
+			} catch (IOException e) {
+				// 404 or similar
+				url = urlStr;
+			}
+			if (url == null)
+				url = urlStr;
+
+			String host = urlStr;
+			try {
+				host = (new URL(url)).getHost();
+			} catch (MalformedURLException e) {
+			}
+
+			// Check for blacklisting
+			// If blacklisted, ignore this tweet.
+			if (blacklist.contains(host))
+				return;
+
+			TweetUrlRecord urec = new TweetUrlRecord();
+			urec.attach(create);
+			urec.setTweetId(status.getId());
+			urec.setUrl(url);
+
+			// Make sure that we don't commit before eliminating any possibility
+			// of blacklisting
+			urls.add(urec);
 		}
 
+		for (TweetUrlRecord urec : urls)
+			urec.store();
+		rec.store();
+	}
+
+	private void updateBlacklist() {
+		blacklist = create.selectFrom(Tables.BLACKLIST_URL).fetch(
+				Tables.BLACKLIST_URL.URL);
 	}
 
 	private void updateUser(User user, int organizationId) throws SQLException {

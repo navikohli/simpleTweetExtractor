@@ -1,9 +1,9 @@
-package de.tangibleit.crawler.twitterUser;
+package de.tangibleit.crawler.tweetextractor;
 
 import java.util.Stack;
 import java.util.Vector;
 
-import de.tangibleit.crawler.twitterUser.Messages.*;
+import de.tangibleit.crawler.tweetextractor.Messages.*;
 
 import akka.actor.Actor;
 import akka.actor.ActorRef;

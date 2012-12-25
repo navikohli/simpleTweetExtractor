@@ -1,4 +1,4 @@
-package de.tangibleit.crawler.twitterUser;
+package de.tangibleit.crawler.tweetextractor;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,6 +10,7 @@ import org.jooq.impl.Factory;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
+import de.tangibleit.crawler.tweetextractor.Messages.*;
 import de.tangibleit.crawler.twitterUser.db.Tables;
 import de.tangibleit.crawler.twitterUser.db.tables.pojos.Queue;
 import de.tangibleit.crawler.twitterUser.db.tables.records.OrganizationRecord;
@@ -17,7 +18,6 @@ import de.tangibleit.crawler.twitterUser.db.tables.records.QueueRecord;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import de.tangibleit.crawler.twitterUser.Messages.*;
 
 public class CrawlResource extends ServerResource {
 	@Get

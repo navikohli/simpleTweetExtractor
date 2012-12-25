@@ -1,4 +1,4 @@
-package de.tangibleit.crawler.twitterUser;
+package de.tangibleit.crawler.tweetextractor;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,7 +11,7 @@ import org.joda.time.Seconds;
 import org.jooq.SQLDialect;
 import org.jooq.impl.Factory;
 
-import de.tangibleit.crawler.twitterUser.Messages.Task;
+import de.tangibleit.crawler.tweetextractor.Messages.Task;
 import de.tangibleit.crawler.twitterUser.db.Tables;
 import scala.collection.parallel.ParSeqLike.LastIndexWhere;
 import twitter4j.RateLimitStatus;

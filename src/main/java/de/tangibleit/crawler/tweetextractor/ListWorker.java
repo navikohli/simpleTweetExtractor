@@ -1,4 +1,4 @@
-package de.tangibleit.crawler.twitterUser;
+package de.tangibleit.crawler.tweetextractor;
 
 import java.sql.SQLException;
 
@@ -6,9 +6,9 @@ import twitter4j.PagableResponseList;
 import twitter4j.QueryResult;
 import twitter4j.TwitterException;
 import twitter4j.User;
-import de.tangibleit.crawler.twitterUser.Messages.CrawlList;
-import de.tangibleit.crawler.twitterUser.Messages.CrawlUser;
-import de.tangibleit.crawler.twitterUser.Messages.Task;
+import de.tangibleit.crawler.tweetextractor.Messages.CrawlList;
+import de.tangibleit.crawler.tweetextractor.Messages.CrawlUser;
+import de.tangibleit.crawler.tweetextractor.Messages.Task;
 import de.tangibleit.crawler.twitterUser.db.Tables;
 import de.tangibleit.crawler.twitterUser.db.tables.records.QueueRecord;
 import akka.actor.UntypedActor;

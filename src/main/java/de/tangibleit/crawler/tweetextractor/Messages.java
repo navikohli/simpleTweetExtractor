@@ -1,4 +1,4 @@
-package de.tangibleit.crawler.twitterUser;
+package de.tangibleit.crawler.tweetextractor;
 
 public class Messages {
 	public static abstract class Task {
