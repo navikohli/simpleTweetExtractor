@@ -9,11 +9,16 @@ import twitter4j.User;
 import de.tangibleit.crawler.tweetextractor.Messages.CrawlList;
 import de.tangibleit.crawler.tweetextractor.Messages.CrawlUser;
 import de.tangibleit.crawler.tweetextractor.Messages.Task;
-import de.tangibleit.crawler.twitterUser.db.Tables;
-import de.tangibleit.crawler.twitterUser.db.tables.records.QueueRecord;
+import de.tangibleit.crawler.tweetextractor.db.Tables;
+import de.tangibleit.crawler.tweetextractor.db.tables.records.QueueRecord;
+import de.tangibleit.crawler.tweetextractor.db.tables.records.TokenRecord;
 import akka.actor.UntypedActor;
 
 public class ListWorker extends Worker<CrawlList> {
+
+	public ListWorker(TokenRecord token) {
+		super(token);
+	}
 
 	@Override
 	protected void execute(CrawlList msg) throws SQLException {

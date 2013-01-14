@@ -4,15 +4,8 @@
 * Import the schema (schema.mwb) into your DB
 * Amend the jdbc connection string in ```settings.properties``` & your ```pom.xml```
 * Create a jar using ```mvn clean package assembly:assembly```
-* Make sure that you have a ```twitter4j.properties``` file with your twitter API keys in the folder you want to run the app from (together with the ```settings.properties```)
+* Make sure that you have a ```settings.properties``` file in the directory you're running the JAR from and that you have added tokens to the DB table.
 
-#### twitter4j.properties
-```
-oauth.consumerKey=
-oauth.consumerSecret=
-oauth.accessToken=
-oauth.accessTokenSecret=
-```
 
 <!---
 #### Author

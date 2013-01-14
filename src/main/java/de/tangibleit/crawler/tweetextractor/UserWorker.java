@@ -19,15 +19,20 @@ import twitter4j.TwitterException;
 import twitter4j.URLEntity;
 import twitter4j.User;
 import de.tangibleit.crawler.tweetextractor.Messages.CrawlUser;
-import de.tangibleit.crawler.twitterUser.db.Tables;
-import de.tangibleit.crawler.twitterUser.db.tables.pojos.BlacklistUrl;
-import de.tangibleit.crawler.twitterUser.db.tables.pojos.Tweet;
-import de.tangibleit.crawler.twitterUser.db.tables.pojos.TweetUrl;
-import de.tangibleit.crawler.twitterUser.db.tables.records.TweetRecord;
-import de.tangibleit.crawler.twitterUser.db.tables.records.TweetUrlRecord;
-import de.tangibleit.crawler.twitterUser.db.tables.records.UserRecord;
+import de.tangibleit.crawler.tweetextractor.db.Tables;
+import de.tangibleit.crawler.tweetextractor.db.tables.pojos.BlacklistUrl;
+import de.tangibleit.crawler.tweetextractor.db.tables.pojos.Tweet;
+import de.tangibleit.crawler.tweetextractor.db.tables.pojos.TweetUrl;
+import de.tangibleit.crawler.tweetextractor.db.tables.records.TokenRecord;
+import de.tangibleit.crawler.tweetextractor.db.tables.records.TweetRecord;
+import de.tangibleit.crawler.tweetextractor.db.tables.records.TweetUrlRecord;
+import de.tangibleit.crawler.tweetextractor.db.tables.records.UserRecord;
 
 public class UserWorker extends Worker<Messages.CrawlUser> {
+	public UserWorker(TokenRecord token) {
+		super(token);
+	}
+
 	private final String regex = "\\(?\\b(http://|www[.])[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|]";
 	private final Pattern pattern = Pattern.compile(regex);
 	private List<String> blacklist;
@@ -163,9 +168,10 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 			urls.add(urec);
 		}
 
+		rec.store();
 		for (TweetUrlRecord urec : urls)
 			urec.store();
-		rec.store();
+
 	}
 
 	private void updateBlacklist() {

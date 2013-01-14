@@ -77,6 +77,8 @@ public class Messages {
 	public static class Idle {
 
 	}
+	
+	public static class Update {}
 
 	public static class CrawlList extends Task {
 		public String userName;

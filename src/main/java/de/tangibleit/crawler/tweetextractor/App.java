@@ -33,10 +33,12 @@ public class App extends Application {
 	public App() {
 		super();
 
+		setupDB();
+		
 		SYSTEM = ActorSystem.create();
 		MANAGER = SYSTEM.actorOf(new Props(WorkerManager.class), "manager");
 
-		setupDB();
+		
 	}
 
 	private void setupDB() {

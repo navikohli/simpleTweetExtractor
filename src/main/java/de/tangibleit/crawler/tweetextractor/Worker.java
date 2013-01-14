@@ -12,7 +12,8 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.Factory;
 
 import de.tangibleit.crawler.tweetextractor.Messages.Task;
-import de.tangibleit.crawler.twitterUser.db.Tables;
+import de.tangibleit.crawler.tweetextractor.db.Tables;
+import de.tangibleit.crawler.tweetextractor.db.tables.records.TokenRecord;
 import scala.collection.parallel.ParSeqLike.LastIndexWhere;
 import twitter4j.RateLimitStatus;
 import twitter4j.Twitter;
@@ -26,8 +27,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
 public abstract class Worker<T extends Task> extends UntypedActor {
-	protected Twitter twitter = new TwitterFactory(new ConfigurationBuilder()
-			.setIncludeEntitiesEnabled(true).build()).getInstance();
+	protected final Twitter twitter;
 
 	protected abstract void execute(T msg) throws SQLException;
 
@@ -42,6 +42,16 @@ public abstract class Worker<T extends Task> extends UntypedActor {
 	private Instant windowEnd = null;
 	private Instant lastRequest = Instant.now();
 	private int windowRemaining = 0;
+
+	public Worker(TokenRecord token) {
+		super();
+		twitter = new TwitterFactory(new ConfigurationBuilder()
+				.setOAuthConsumerKey(token.getConsumerKey())
+				.setOAuthConsumerSecret(token.getConsumerSecret())
+				.setOAuthAccessToken(token.getAccessToken())
+				.setOAuthAccessTokenSecret(token.getAccessTokenSecret())
+				.setIncludeEntitiesEnabled(true).build()).getInstance();
+	}
 
 	private void initialise(String path) {
 		try {
