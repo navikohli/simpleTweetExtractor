@@ -41,11 +41,29 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 		URL url = new URL(address);
 		HttpURLConnection connection = (HttpURLConnection) url
 				.openConnection(Proxy.NO_PROXY);
+		connection.setReadTimeout(1000);
+		connection.setConnectTimeout(1000);
 		connection.setInstanceFollowRedirects(false);
 		connection.connect();
 		String expandedURL = connection.getHeaderField("Location");
 		connection.getInputStream().close();
 		return expandedURL;
+	}
+
+	private String maxExpandURL(String url) {
+		String lastUrl = "";
+		while (!url.equals(lastUrl)) {
+			lastUrl = url;
+			try {
+				url = expandURL(url);
+			} catch (IOException e) {
+				return null;
+			}
+
+			if (url == null)
+				url = lastUrl;
+		}
+		return url;
 	}
 
 	@Override
@@ -128,35 +146,25 @@ public class UserWorker extends Worker<Messages.CrawlUser> {
 		rec.setTime(new Timestamp(status.getCreatedAt().getTime()));
 		rec.setUserId(status.getUser().getId());
 
-		Matcher m = pattern.matcher(status.getText());
 		List<TweetUrlRecord> urls = new ArrayList<TweetUrlRecord>();
-		while (m.find()) {
-			String urlStr = m.group();
-			if (urlStr.startsWith("(") && urlStr.endsWith(")")) {
-				urlStr = urlStr.substring(1, urlStr.length() - 1);
-			}
+
+		for (URLEntity entity : status.getURLEntities()) {
 
 			String url;
-			try {
-				url = expandURL(urlStr);
-
-			} catch (IOException e) {
-				// 404 or similar
-				url = urlStr;
-			}
+			url = entity.getExpandedURL();
 			if (url == null)
-				url = urlStr;
+				url = entity.getURL();
 
-			String host = urlStr;
-			try {
-				host = (new URL(url)).getHost();
-			} catch (MalformedURLException e) {
-			}
+
+			url = maxExpandURL(url);
+			if(url == null)
+				continue;
 
 			// Check for blacklisting
 			// If blacklisted, ignore this tweet.
-			if (blacklist.contains(host))
-				return;
+			for (String ban : blacklist)
+				if (url.contains(ban))
+					return;
 
 			TweetUrlRecord urec = new TweetUrlRecord();
 			urec.attach(create);
